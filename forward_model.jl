@@ -203,7 +203,6 @@ function forward_model!(
         # Multiply by solar model
         @turbo hires[:] .*= rt.hires_solar.S[:,1]
 
-
         success = RE.apply_isrf_to_spectrum!(
                 inst_buf, # Convolution buffer
                 isrf[spec], # ISRF table
@@ -231,7 +230,6 @@ function forward_model!(
     for sve in SV.state_vector_elements
         RE.apply_radiance_correction!(rt_buf, sve)
     end
-
 
     # Same as above, but we do one Jacobian at a time
     for (spec, swin) in spectral_windows
@@ -283,7 +281,6 @@ function forward_model!(
 
 
     # Post-ISRF Jacobian calculations for ZLO
-
     for (i, sve) in RE.StateVectorIterator(SV, RE.ZeroLevelOffsetPolynomialSVE)
         RE.calculate_jacobian!(rt_buf, sve)
     end
@@ -291,38 +288,35 @@ function forward_model!(
     # Post-ISRF Jacobian calculation for ISRF
     for (i, sve) in RE.StateVectorIterator(SV, RE.DispersionPolynomialSVE)
 
-        for (spec, swin) in spectral_windows
+        disp = sve.dispersion
+        swin = disp.spectral_window
 
-            if !(sve.dispersion.spectral_window === swin)
-                # This is not our spectral window - SKIP!
-                continue
+        # Do a silly look up to get the right "spec" FIX THIS
+        this_spec = -1
+        for (spec, s) in spectral_windows
+            if swin === s
+                this_spec = spec
             end
+        end
 
-            # This has the hires radiances..
-            hires_rad = buf.rt[swin].optical_properties.tmp_Nhi1
-            success = RE.calculate_dispersion_polynomial_jacobian!(
-                inst_buf.low_res_output,
-                inst_buf,
-                sve,
-                isrf[spec],
-                dispersion[spec],
-                hires_rad,
-                swin
-            )
+        # This has the hires radiances..
+        hires_rad = buf.rt[swin].optical_properties.tmp_Nhi1
+        success = RE.calculate_dispersion_polynomial_jacobian!(
+            inst_buf,
+            sve,
+            isrf[this_spec],
+            hires_rad
+        )
 
-            # Re-set to zero! IMPORTANT!
-            @views rt_buf.jacobians[sve].S[:] .= 0
-            # Ingest jacobian into the right place
-            rt_buf.jacobians[sve].I[rt_buf.indices[swin]] =
-                inst_buf.low_res_output[dispersion[spec].index]
+        # Ingest jacobian into the right place
+        rt_buf.jacobians[sve].I[rt_buf.indices[swin]] =
+            inst_buf.low_res_output[disp.index]
 
-            if !success
-                @warn "Application of ISRF on Jacobian $(sve) for $(swin) FAILED."
-                return false
-            else
-               @debug "Application of ISRF on Jacobian $(sve) for $(swin) successful."
-            end
-
+        if !success
+            @warn "Application of ISRF on Jacobian $(sve) for $(swin) FAILED."
+            return false
+        else
+            @debug "Application of ISRF on Jacobian $(sve) for $(swin) successful."
         end
 
     end

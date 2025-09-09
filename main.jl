@@ -66,7 +66,13 @@ end
 
 # Number of pressure levels on the retrieval grid
 N_RT_lev = 20
-# what number type we use (keep this Float64)
+# What number type we use (keep this Float64)
+#=
+    Note - for flexibility, RetrievalToolbox does not use many eplicit Float64 variables
+    or arrays. Users could thus, in theory, write a retrieval application that makes use
+    of mostly Float32 to save memory. XRTM, however, explicitly requires Float64s in many
+    functions, hence we have no choice but to leave this as Float64 for the time being.
+=#
 my_type = Float64
 
 # This is where the cmdline arguments are processed
@@ -159,6 +165,10 @@ function main(barrier_channel, sync_channel, ARGS_in)
 
 
     if myid() == 1
+
+        # Generate SharedArray only if we have multi-processing..
+        distributed = nprocs() > 1
+
         # Root channel creates the ABSCO dict, and loads the data..
         abscos = Dict{String, RE.AbstractSpectroscopy}()
 
@@ -169,7 +179,7 @@ function main(barrier_channel, sync_channel, ARGS_in)
                 # Pass the path to the ABSCO file
                 args["o2_spec"],
                 spectral_unit=:Wavelength,
-                distributed=true
+                distributed=distributed
             )
             @info "... done!"
 
@@ -189,7 +199,7 @@ function main(barrier_channel, sync_channel, ARGS_in)
                 # Pass the path to the ABSCO file
                 args["co2_spec"],
                 spectral_unit=:Wavelength,
-                distributed=true
+                distributed=distributed
             )
             @info "... done!"
 
@@ -212,7 +222,7 @@ function main(barrier_channel, sync_channel, ARGS_in)
                 # Pass the path to the ABSCO file
                 args["h2o_spec"],
                 spectral_unit=:Wavelength,
-                distributed=true
+                distributed=distributed
             )
             @info "... done!"
         end
@@ -395,7 +405,7 @@ function main(barrier_channel, sync_channel, ARGS_in)
     # Big sounding ID loop! Note this is wrapped in a @sync as we need all workers to
     # finish at the same time. Otherwise the sharedarray from the root process would
     # cease to exist while others might still be running..
-    @sync begin
+
     for sounding_id in sounding_id_list
 
         # Free up memory, maybe useful for multi-processing
@@ -433,7 +443,15 @@ function main(barrier_channel, sync_channel, ARGS_in)
         # Skip bad soundings immediately
         _input = first(values(scene_inputs))
         if _input["sounding_qual_flag"][sounding_id] != 0
-            @info "Bad sounding quality. Exiting."
+            @info "[MAIN] Bad sounding quality for $(sounding_id). Exiting."
+
+            # Remove init file
+            if args["touch_init"]
+                touch_fname = joinpath(args["output"], "$(sounding_id).h5.init")
+                new_touch_fname = joinpath(args["output"], "$(sounding_id).h5.error")
+                run(`mv $(touch_fname) $(new_touch_fname)`)
+            end
+
             # Move on to next sounding
             continue
         end
@@ -578,11 +596,13 @@ function main(barrier_channel, sync_channel, ARGS_in)
                 gauss_params = scene_inputs[first(spec_array)]["met"][sounding_id]["aerosol_gauss_params_met"][:, idx]
 
                 # The position of the Gaussian parameters was inferred from the L2FP code..
-                # (might need checking)
+                # (might need checking). Note we make conversions here to make sure that all
+                # inputs to the GaussAerosol have the correct float type.
+
                 this_trop_height = convert(my_type, gauss_params[2])
                 this_trop_width = convert(my_type, gauss_params[3])
                 # Override -- ACOS says we have to do 0.05 width
-                this_trop_width = 0.05
+                this_trop_width = convert(my_type, 0.05)
                 this_trop_aod = convert(my_type, gauss_params[4])
 
                 @info "Creating Gauss-type aerosol for $(trop_types[idx])."
@@ -593,7 +613,7 @@ function main(barrier_channel, sync_channel, ARGS_in)
                     this_trop_height, # height p/psurf
                     this_trop_width, # width p/psurf
                     Unitful.NoUnits,
-                    0.755, # ref wavelength
+                    convert(my_type, 0.755), # ref wavelength
                     u"µm", # ref wavelength unit
                     this_trop_aod, # Total AOD at reference point
                 )
@@ -865,6 +885,7 @@ function main(barrier_channel, sync_channel, ARGS_in)
 
         # Return buffer, solver and forward model arguments for single-ID retrieval
         if (args["max_iterations"] == 0) & (length(sounding_id_list) == 1)
+            @info "No iterations requested - returning buffer, solver and FM keyword args."
             return buf, solver, fm_kwargs
         end
 
@@ -909,7 +930,6 @@ function main(barrier_channel, sync_channel, ARGS_in)
         end
 
     end # End sounding ID loop
-    end # End @sync
 
 end
 

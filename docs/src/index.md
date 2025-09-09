@@ -1,6 +1,6 @@
 # ACOS Goddard
 
-Welcome to ACOS Goddard, an independent implementation of the ACOS algorithm that was originally created at NASA JPL. The NASA JPL implementation of the algorithm is **RtRetrievalFramework** and is available at https://github.com/nasa/RtRetrievalFramework. Our implementation of ACOS uses the RetrievalToolbox library, which can be freely downloaded [here](https://www.github.com/US-GHG-Center/RetrievalToolbox.jl). One can think of this as an own application that is built on top of **RetrievalToolbox**.
+Welcome to ACOS Goddard, an independent implementation of the ACOS algorithm that was originally created at NASA JPL. The NASA JPL implementation of the algorithm is **RtRetrievalFramework** and is available [here](https://github.com/nasa/RtRetrievalFramework). Our implementation of ACOS uses the RetrievalToolbox library, which can be freely downloaded [here](https://www.github.com/US-GHG-Center/RetrievalToolbox.jl). One can think of this as an own application that is built on top of **RetrievalToolbox**.
 
 The purpose of this application is to serve as a demonstration for science users to see how a moderately complex CO$_2$ retrieval algorithm can be built and run with the **RetrievalToolbox** software library.
 
@@ -211,7 +211,7 @@ XRTM_PROGRESS=1 JULIA_NUM_THREADS=1 julia --project=./ -p 2 ./run.jl \
         --max_iterations 10
 ```
 
-Note that the ACOS Goddard application is not only spawned three times - we are making use of the `SharedArray` type for distributed computing in Julia such that the big spectroscopy tables are only loaded into memory **once**, and all worker processes access the same data. The `-p` flag determines the number of **additional** processes that are spawned; so `-p 2` will spawn 2 more processes, and ACOS Goddard will perform retrievals on a total of 3 parallel processes.
+Note that the ACOS Goddard application is not only spawned three times - we are making use of the `SharedArray` type for distributed computing in Julia such that the big spectroscopy tables are only loaded into memory **once**, and all worker processes access the same data. The `-p` flag determines the number of **additional** processes that are spawned; so `-p 2` will spawn 2 more processes, and ACOS Goddard will perform retrievals on a total of 3 parallel processes. In multi-processing mode, logging outputs are filtered, so any logging message that does not start with `[MAIN]` is suppressed; users who want a different behavior should edit the corresponding code in `main.jl`, or change the corresponding logging message to start with `[MAIN]` if a particular log message is wanted in multi-processing mode.
 
 Users are encouraged to try out various combinations of numbers of **additional** processes (`-p`) and numbers of threads (`JULIA_NUM_THREADS`) for optimal throughput, and results are likely to differ for different computing systems.
 
