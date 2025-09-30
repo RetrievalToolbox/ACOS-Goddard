@@ -740,17 +740,6 @@ function main()
             zeros(my_type, 1016),
         )
 
-        #=
-        Will contain ouptuts of OE calculations
-        (this can be optional, maybe the chosen inversion
-        method does not require an OE buffer, or maybe
-        it requires something else)
-        =#
-
-        oe_buf = RE.OEBuffer(
-            3*1016, N_sv, my_type
-            )
-
         # Will contain outputs of radiance, jacobians and
         # dispersion indices. We make this a ScalarRTBuffer because
         # the instrument only measures Intensity, and not the polarization components.
@@ -951,8 +940,7 @@ function main()
                 scene_inputs,
                 state_vector,
                 sounding_id,
-                buf,
-                oe_buf;
+                buf;
                 max_iter=args["max_iterations"],
                 gamma=args["gamma"],
                 dsigma_scale=args["dsigma_scale"],

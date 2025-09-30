@@ -2,7 +2,6 @@ function forward_model!(
     SV::RE.AbstractStateVector;
     buf::RE.EarthAtmosphereBuffer,
     inst_buf::RE.InstrumentBuffer,
-    oe_buf::RE.OEBuffer,
     rt_buf::RE.AbstractRTBuffer,
     dispersion::Dict,
     isrf::Dict,

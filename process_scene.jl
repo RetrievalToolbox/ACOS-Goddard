@@ -3,8 +3,7 @@ function process_snid(
     scene_inputs,
     state_vector,
     snid,
-    buf,
-    oe_buf;
+    buf;
     max_iter=10,
     gamma=10.0,
     dsigma_scale=2.0,
@@ -424,7 +423,6 @@ function process_snid(
     fm_kwargs = (
         buf=buf,
         inst_buf=inst_buf,
-        oe_buf=oe_buf,
         rt_buf=rt_buf,
         dispersion=disps,
         isrf=isrfs,
@@ -437,9 +435,8 @@ function process_snid(
         high_options=high_options
     )
 
-    # Create a view to the Sa buffer, such that the
-    # solver can use it later on.
-    Sa = @views oe_buf.Sa[1:N_sv, 1:N_sv]
+    # Pre-allocate posterior covarince matrix
+    Sa = zeros(N_sv, N_sv)
 
     # Calculate measurement noise
     # NOTE:
