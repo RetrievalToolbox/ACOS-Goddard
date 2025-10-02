@@ -47,9 +47,20 @@ my_args = [
 barrier_channel = RemoteChannel(() -> Channel{RemoteChannel}(1))
 sync_channel = RemoteChannel(() -> Channel{Any}(nworkers() - 1))
 
-@everywhere my_args = $my_args
-@everywhere empty!(ARGS)
-@everywhere push!(ARGS, my_args...)
+if nprocs() > 1
+    # For multi-processing we must @everywhere all these calls
+    @everywhere my_args = $my_args
+    @everywhere empty!(ARGS)
+    @everywhere push!(ARGS, my_args...)
 
-@everywhere include("main.jl")
-@everywhere main($barrier_channel, $sync_channel, ARGS)
+    @everywhere include("main.jl")
+    @everywhere main($barrier_channel, $sync_channel, ARGS)
+else
+    # In case of single processing, users might want to inspect the results contents of
+    # the buffer, the solver and the forward model keyword arguments.
+    empty!(ARGS)
+    push!(ARGS, my_args...)
+
+    include("main.jl")
+    main(barrier_channel, sync_channel, ARGS)
+end
