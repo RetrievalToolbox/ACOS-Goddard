@@ -158,7 +158,7 @@ Each command line argument will be explained below.
 
 * `--co2_scale_strong`: (optional). Must be a real number. The "strong" part of the CO2 spectroscopy table (> 2 µm) is is scaled by this number. For ABSCO version 5.2, the recommended value is `0.998`, but that number was derived with the RtRetrievalFramework and may not be the ideal choice for this algorithm. The default is `1.0`.
 
-* `--h2o_spec`: Points to the path of the carbon dioxide spectroscopy ABSCO file.
+* `--h2o_spec`: Points to the path of the water vapor spectroscopy ABSCO file.
 
 * `--spec`: A comma-separated list of integers (1,2 and/or 3) that represent which spectrometers (1 = O$_2$ A-band, 2 = CO$_2$ band at 1.6 µm, 3 = CO$_2$ band at 2.06 µm) are used in the retrieval. This can be something like `1,3`, `2` (for a single-band retrieval of CO$_2$), or to use all (standard) `1,2,3`. The spectrometer also impacts the state vector - only those state vector elements will be used which make sense given the spectrometer configuration. For example, the CO$_2$ profile will only be retrieved if either spectrometer `2` or `3` are used. Surface pressure and SIF are not retrieved if spectrometer `1` is not in the list.
 
