@@ -172,10 +172,13 @@ function main(barrier_channel, sync_channel, ARGS_in)
         # Root channel creates the ABSCO dict, and loads the data..
         abscos = Dict{String, RE.AbstractSpectroscopy}()
 
+        # Find out which ABSCO loader to use.. (this is from io.jl)
+        load_spectroscopy = which_ABSCO_loader(args["o2_spec"])
+
         # If we use the O2 A-band, we need O2 at least
         if 1 in spec_array
             @info "Reading in O2 spectroscopy ..."
-            abscos["O2"] = RE.load_ABSCO_spectroscopy(
+            abscos["O2"] = load_spectroscopy(
                 # Pass the path to the ABSCO file
                 args["o2_spec"],
                 spectral_unit=:Wavelength,
@@ -195,7 +198,11 @@ function main(barrier_channel, sync_channel, ARGS_in)
         # If we use either of the two CO2 bands, we need H2O and CO2
         if (2 in spec_array) | (3 in spec_array)
             @info "Reading in CO2 spectroscopy ..."
-            abscos["CO2"] = RE.load_ABSCO_spectroscopy(
+
+            # Find out which ABSCO loader to use.. (this is from io.jl)
+            load_spectroscopy = which_ABSCO_loader(args["co2_spec"])
+
+            abscos["CO2"] = load_spectroscopy(
                 # Pass the path to the ABSCO file
                 args["co2_spec"],
                 spectral_unit=:Wavelength,
@@ -218,7 +225,11 @@ function main(barrier_channel, sync_channel, ARGS_in)
 
 
             @info "Reading in H2O spectroscopy ..."
-            abscos["H2O"] = RE.load_ABSCO_spectroscopy(
+
+            # Find out which ABSCO loader to use.. (this is from io.jl)
+            load_spectroscopy = which_ABSCO_loader(args["h2o_spec"])
+
+            abscos["H2O"] = load_spectroscopy(
                 # Pass the path to the ABSCO file
                 args["h2o_spec"],
                 spectral_unit=:Wavelength,
