@@ -1,6 +1,6 @@
 # The retrieval toolkit - every function you use with a RE.xxx is from there
 # Any other function is either from a third-party module or from this repo.
-
+using Pkg; Pkg.activate("/Users/psomkuti/Work/ghgc/RetrievalToolbox.jl/")
 using RetrievalToolbox
 const RE = RetrievalToolbox
 
@@ -129,14 +129,14 @@ function main(barrier_channel, sync_channel, ARGS_in)
         #########################
         Create the needed objects
         #########################
-        The following objects are very "read-only" from the viewpoint of the rest
-        of the algorithm, hence they can be loaded once into memory *before* the sounding
-        ID loop.
+        The following objects are very "read-only" from the viewpoint of the rest of the
+        algorithm, hence they can be loaded once into memory *before* the sounding ID
+        loop.
     =#
 
-    # Read in spectroscopy, depending on the window configuration. We
-    # keep them in a Dictionary that are accessed via a simple string
-    # so that e.g. `abscos["CO2"]` gets you the CO2 absco.
+    # Read in spectroscopy, depending on the window configuration. We keep them in a
+    # Dictionary that are accessed via a simple string so that e.g. `abscos["CO2"]` gets
+    # you the CO2 absco.
 
     #=
         This is the ONLY part in the code, for now, in which we are making use of Julia's
@@ -214,14 +214,33 @@ function main(barrier_channel, sync_channel, ARGS_in)
             @info "Scaling CO2 cross sections for weak CO2 by " *
                 "$(args["co2_scale_weak"])"
             idx_weak = findall(abscos["CO2"].ww * abscos["CO2"].ww_unit .< 2.0u"µm")
-            abscos["CO2"].cross_section[idx_weak,:,:,:] .*= args["co2_scale_weak"]
 
+            @info abscos["CO2"] isa ABSCOAERSpectroscopy4D
+
+            # Note that data order is different between ABSCO and ABSCOAER data
+            # ABSCOAER has H2O VMR, p, T, spectral
+            # ABSCO has spectral, H2O VMR, p, T
+            if (abscos["CO2"] isa ABSCOAERSpectroscopy4D)
+                idx = (:,:,:,idx_weak)
+            else
+                idx = (idx_weak,:,:,:)
+            end
+
+            abscos["CO2"].cross_section[idx...] .*= args["co2_scale_weak"]
 
             # Apply a user-defined scale factor for CO2 spectroscopy in the strong band
             @info "Scaling CO2 cross sections for strong CO2 by " *
                 "$(args["co2_scale_strong"])"
             idx_strong = findall(abscos["CO2"].ww * abscos["CO2"].ww_unit .> 2.0u"µm")
-            abscos["CO2"].cross_section[idx_strong,:,:,:] .*= args["co2_scale_strong"]
+
+            # Note that data order is different between ABSCO and ABSCOAER data
+            if (abscos["CO2"] isa ABSCOAERSpectroscopy4D)
+                idx = (:,:,:,idx_strong)
+            else
+                idx = (idx_strong,:,:,:)
+            end
+
+            abscos["CO2"].cross_section[idx...] .*= args["co2_scale_strong"]
 
 
             @info "Reading in H2O spectroscopy ..."
