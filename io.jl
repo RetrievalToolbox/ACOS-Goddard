@@ -8,6 +8,8 @@ Returns the correct RetrievalToolbox function to load some ABSCO table.
 The user might have JPL ABSCO spectroscopy, or maybe they use ABSCO AER type tables that
 can be generated via the scripts from the REFRACTOR repository. This is just a quick check
 to see which one it is, and return the correct function to load the tables.
+
+IMPORTANT! This is a very crude check, and might fail if data formats and contents change!
 """
 function which_ABSCO_loader(fname::String)
 
@@ -22,9 +24,7 @@ function which_ABSCO_loader(fname::String)
         # I think this is an ABSCO AER table..
         close(h5)
         return RE.load_ABSCOAER_spectroscopy
-    end
-
-    if "Gas_Index" in keys(h5)
+    else
         # I think this is a JPL ABSCO table
         close(h5)
         return RE.load_ABSCO_spectroscopy

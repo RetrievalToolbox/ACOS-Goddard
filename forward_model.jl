@@ -26,7 +26,7 @@ function forward_model!(
     # Re-calculate indices for all windows
     RE.calculate_indices!(buf)
 
-    # Update the solar scaler field in the RT container
+    # Update the solar scaler field in each RT container
     for (swin, rt) in buf.rt
         RE.solar_scaler_statevector_update!(rt, SV)
     end
