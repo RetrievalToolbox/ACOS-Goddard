@@ -526,18 +526,20 @@ function process_snid(
         all_chi2_small = true
         for (k,v) in chi2
             @info "$(k): χ² = $(v)"
-            if (v > 20)
+            if (v > 5.0)
                 all_chi2_small = false
             end
         end
 
         # Manually push gamma to 1000 when we get closer to the solution for better
-        # convergence
+        # convergence. Or keep the current gamma if > 1000.
 
         if (all_chi2_small)
-            solver.gamma = 1000
+            solver.gamma = max(1000, solver.gamma)
             @info "Setting LM-γ to $(solver.gamma)"
         end
+
+        @info "LM-γ: $(solver.gamma)"
 
     end
     @debug "Iterations done."
@@ -605,7 +607,7 @@ function calculate_kernel_prior(
     # NOT in degrees!!
     F_g = (1 - Θ^2) / (1 + Θ^2 - 2 * Θ * cos(pi - g))^1.5
 
-    # Finall, produce the reflectance ρRPV
+    # Finally, produce the reflectance ρRPV
 
     ρRPV = ρ0 * (cosd(θ1)^(k-1) * cosd(θ2)^(k-1)) / (cosd(θ1) + cosd(θ2))^(1-k) *
         F_g * one_plus_RG
