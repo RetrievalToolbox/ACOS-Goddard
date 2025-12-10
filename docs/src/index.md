@@ -1,8 +1,8 @@
 # ACOS Goddard
 
-Welcome to ACOS Goddard, an independent implementation of the ACOS algorithm that was originally created at NASA JPL. The NASA JPL implementation of the algorithm is **RtRetrievalFramework** and is available [here](https://github.com/nasa/RtRetrievalFramework). Our implementation of ACOS uses the RetrievalToolbox library, which can be freely downloaded [here](https://www.github.com/US-GHG-Center/RetrievalToolbox.jl). One can think of this as an own application that is built on top of **RetrievalToolbox**.
+Welcome to ACOS Goddard, an independent implementation of the ACOS algorithm that was originally created at NASA JPL. The NASA JPL implementation of the algorithm is `RtRetrievalFramework` and is available [here](https://github.com/nasa/RtRetrievalFramework). Our implementation of ACOS uses the `RetrievalToolbox` library, which can be freely downloaded [here](https://www.github.com/US-GHG-Center/RetrievalToolbox.jl). One can think of this as an own application that is built on top of `RetrievalToolbox`.
 
-The purpose of this application is to serve as a demonstration for science users to see how a moderately complex CO$_2$ retrieval algorithm can be built and run with the **RetrievalToolbox** software library.
+The purpose of this application is to serve as a demonstration for science users to see how a moderately complex CO$_2$ retrieval algorithm can be built and run with the `RetrievalToolbox` software library.
 
 Before downloading or using this application, users are highly encouraged to read the [important notes](important.md). Further, there are notable differences to the reference implementation as well as known issues, which are listed [here](known_issues.md).
 
@@ -50,6 +50,7 @@ wget https://lasp.colorado.edu/lisird/resources/lasp/hsrs/v2/hybrid_reference_sp
 Note that an appropriate change in the corresponding command line argument to the application must be done. The "--solar_model" command line argument must point to the right file. No further changes are needed, the application detects the type of model based on the file ending (`.nc` for the LASP TSIS file, and `.h5` for the RtRetrievalFramework format). By default, examples use the model as provided by RtRetrievalFramework.
 
 Further, the aerosol optical properties as well as some other additional data (such as the non-uniform sampling grid) are required:
+
 ``` bash
 # (assuming you are still in `example_data`)
 wget https://github.com/nasa/RtRetrievalFramework/raw/refs/heads/master/input/common/input/l2_aerosol_combined.h5
@@ -68,7 +69,7 @@ As of now, RetrievalToolbox supports spectroscopy in the ABSCO format only. To u
 Running the provided example retrieval is done as follows, assuming that `XRTM_PATH` is correctly set and the needed auxiliary files are downloaded and placed in the correct directories. It is important that the `--project=./` argument is supplied, otherwise the Julia session has no knowledge of the additional packages needed by this application!
 
 ``` bash
-XRTM_PROGRESS=1 julia --project=/. ./from_repl.jl
+XRTM_PROGRESS=1 julia --project=./ ./from_repl.jl
 ```
 
 or from within Julia, when started with `--project=./`
@@ -215,7 +216,7 @@ Note that the ACOS Goddard application is not only spawned three times - we are 
 
 Users are encouraged to try out various combinations of numbers of **additional** processes (`-p`) and numbers of threads (`JULIA_NUM_THREADS`) for optimal throughput, and results are likely to differ for different computing systems.
 
-Early tests on a 32-core node with 64G memory indicate that it ~16 processes with 2 threads each will likely still run, whereas more processes or threads will hit the memory limit soon for a regular configuration. Work to optimize the multi-process batch processing is ongoing. Note that applications built with RetrievalToolbox are generally quite memory-hungry, most objects persist to allow users to introspects all aspects of the retrieval at any given time.
+Early tests on a 32-core node with 64G memory indicate that it ~16 processes with 2 threads each will likely still run, whereas more processes or threads will hit the memory limit soon for a regular configuration. Work to optimize the multi-process batch processing is ongoing. Note that applications built with RetrievalToolbox are generally quite memory-hungry, most objects persist to allow users to introspect most aspects of the retrieval at any given time.
 
 For a given list of sounding IDs, either ingested via the `--sounding_id_list` argument, or by providing more than one ID through `--sounding_id`, the application chops up the list into equal lengths (if possible) and lets each process run through its own sub-list. Note that this is a static assignment for now, and due to the simple nature of this solution, there is no re-balancing of the workload **after** the application is called. So if one worker happens to be given a list of sounding IDs which all have a bad quality flag, that worker process will simply do nothing until all other processes are finished with their respective batch of retrievals. Also note that Julia's `SharedArray` functionality **only works on a single-node**, so running this set-up on a cluster where workers are spawned on different nodes will **not work**.
 

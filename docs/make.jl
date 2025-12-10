@@ -1,7 +1,3 @@
-using Pkg
-Pkg.activate("../")
-push!(LOAD_PATH,"../")
-
 using Documenter
 
 makedocs(
@@ -15,7 +11,7 @@ makedocs(
 )
 
 deploydocs(;
-    repo = "github.com/PeterSomkuti/ACOS-Goddard.git",
+    repo = "github.com/RetrievalToolbox/ACOS-Goddard.git",
     versions = ["stable" => "v^", "v#.#", "dev" => "main"],
     push_preview = false,
 )
