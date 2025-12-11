@@ -12,5 +12,7 @@ Below is the fit that can be produced with the example data within the repositor
 
 ![A three-panel figure showing the spectral fits of the example retrieval that is part of the repository.](ACOS-Goddard-example.png)
 
+> [!NOTE]
+> ACOS-Goddard is in active development! Regular pushes to the `main` branch are expected, thus we recommend interested users to fork the repository if this application is used in research or production. Read more about forks and how to sync them [here](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks).
 
 ACOS-Goddard was written at the University of Maryland and NASA Goddard Space Flight Center.
