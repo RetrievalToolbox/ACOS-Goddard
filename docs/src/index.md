@@ -61,8 +61,7 @@ Note that the location of these two files is *hard-coded* inside our application
 
 ### Obtaining Spectroscopy
 
-As of now, RetrievalToolbox supports spectroscopy in the ABSCO format only. To use this retrieval algorithm, users need to obtain the spectroscopy tables for O$_2$, CO$_2$ and H$_2$O. The GES-DISC hosts a [webpage](https://disc.gsfc.nasa.gov/information/glossary?title=OCO-2%20ABSCO) for the time being which lists contact addresses where researchers can request those files.
-
+As of now, RetrievalToolbox supports spectroscopy in the ABSCO formats only, recognizing the file format of the tables produced by NASA JPL, as well as those produced by the [ReFRACtor/ABSCO](https://github.com/ReFRACtor/ABSCO) toolset. To use this retrieval algorithm, users need to obtain the spectroscopy tables for O$_2$, CO$_2$ and H$_2$O. The GES-DISC hosts a [webpage](https://disc.gsfc.nasa.gov/information/glossary?title=OCO-2%20ABSCO) for the time being which lists contact addresses where researchers can request the files used in the operational OCO-2/3 data streams.
 
 ## Running Examples
 
