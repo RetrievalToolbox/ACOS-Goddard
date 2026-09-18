@@ -506,11 +506,14 @@ function main(barrier_channel, sync_channel, ARGS_in)
         for spec in spec_array
             @info "Creating dispersion object for $(spectral_windows[spec])."
 
+            # Get the FP/Frame index
+            fp_idx, frame_idx = scene_inputs[spec]["fp_frame_idx"][sounding_id]
+            
             # Note that the dispersion polynomial coefficients are present
             # in every instance of `scene_inputs`.
 
             my_dispersions[spec] = RE.SimplePolynomialDispersion(
-                scene_inputs[spec]["dispersion"][spec],
+                scene_inputs[spec]["dispersion"][fp_idx],
                 1:1016,
                 spectral_windows[spec]
             );
